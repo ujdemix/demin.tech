@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Евгений Демин | Flow Assurance · Многофазное моделирование · Нефтегаз</title>
+  <meta name="description"
+    content="Евгений Демин — эксперт по flow assurance и многофазному моделированию потоков в трубопроводах и скважинах. OLGA, PIPESIM, Prosper. Корпоративное обучение, инжиниринг, менторинг.">
+  <meta name="keywords"
+    content="Евгений Демин, flow assurance, многофазное течение, многофазное моделирование, моделирование потоков в трубопроводах, технологии добычи нефти и газа, гидраты, парафины, OLGA, PIPESIM, Prosper, PVTsim, обучение нефтегаз, production engineering, нефтегазовый консультант">
+  <meta name="author" content="Евгений Демин">
+  <meta property="og:title" content="Евгений Демин | Flow Assurance &amp; Production Engineering">
+  <meta property="og:description"
+    content="Эксперт по flow assurance, многофазному моделированию и технологиям добычи нефти и газа. Обучение, консалтинг, менторинг.">
+  <meta property="og:url" content="https://demin.tech">
+  <meta property="og:type" content="website">
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='12' fill='%230D0D0D'/%3E%3Ctext x='50' y='68' font-family='sans-serif' font-size='60' font-weight='900' fill='%23F0EDE6' text-anchor='middle'%3EД%3C/text%3E%3C/svg%3E">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Евгений Демин",
+    "alternateName": "Eugene Demin",
+    "url": "https://demin.tech",
+    "email": "eugene@demin.tech",
+    "jobTitle": "Эксперт по технологиям добычи нефти и газа",
+    "knowsAbout": ["Flow Assurance", "Multiphase Flow Modeling", "Production Engineering", "OLGA", "PIPESIM", "Prosper"],
+    "sameAs": ["https://www.linkedin.com/in/eugene-demin", "https://hh.ru/resume/ff8cbc03ff055768220039ed1f48433268386e"]
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Unbounded:wght@300;700;900&display=swap"
+    rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #F0EDE6;
+      --ink: #0D0D0D;
+      --accent: #C8401A;
+      --muted: rgba(13, 13, 13, 0.58);
+      --mono: 'JetBrains Mono', monospace;
+      --display: 'Unbounded', sans-serif;
+      --gap: clamp(1rem, 2vw, 1.8rem);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--mono);
+      overflow-x: hidden;
+      cursor: default;
+    }
+
+    /* ── CANVAS ── */
+    #canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      opacity: .45;
+      pointer-events: all;
+      cursor: crosshair;
+    }
+
+    /* ── LAYOUT ── */
+    .site {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr 1px 1fr;
+      grid-template-rows: auto 1px auto;
+      margin: var(--gap);
+      border: 1px solid var(--ink);
+      pointer-events: none;
+    }
+
+    .divider-v {
+      background: var(--ink);
+      grid-column: 2;
+      grid-row: 1 / span 3;
+    }
+
+    .divider-h {
+      background: var(--ink);
+      grid-column: 1 / span 3;
+      grid-row: 2;
+    }
+
+    /* ── PANELS ── */
+    .panel {
+      pointer-events: auto;
+      padding: var(--gap);
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .panel--left {
+      grid-column: 1;
+      grid-row: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: #F0EDE6;
+    }
+
+    .panel--right {
+      grid-column: 3;
+      grid-row: 1;
+      background: var(--ink);
+      color: var(--bg);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .panel--bottom-left {
+      grid-column: 1;
+      grid-row: 3;
+      background: #F0EDE6;
+    }
+
+    .panel--bottom-right {
+      grid-column: 3;
+      grid-row: 3;
+      background: var(--accent);
+      color: var(--bg);
+    }
+
+    /* ── HERO ── */
+    .badge {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: .55rem;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      border: 1px solid var(--ink);
+      padding: .2em .6em;
+      margin-bottom: .8rem;
+    }
+
+    h1 {
+      font-family: var(--display);
+      font-weight: 900;
+      font-size: clamp(2.2rem, 5.5vw, 5rem);
+      line-height: .88;
+      letter-spacing: -.03em;
+      text-transform: uppercase;
+      margin-bottom: .4rem;
+      overflow-wrap: break-word;
+    }
+
+    .hero-sub {
+      font-size: clamp(.65rem, .9vw, .8rem);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+      margin-top: 1.5rem;
+      line-height: 1.7;
+    }
+
+    /* ── SERVICES GRID ── */
+    .services {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-top: 1px solid var(--ink);
+      border-left: 1px solid var(--ink);
+      margin: 0 calc(var(--gap) * -1) calc(var(--gap) * -1);
+    }
+
+    .svc {
+      padding: calc(var(--gap) * .6) var(--gap);
+      border-right: 1px solid var(--ink);
+      border-bottom: 1px solid var(--ink);
+      font-size: clamp(.65rem, 1vw, .8rem);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      line-height: 1.4;
+      transition: background .25s, color .25s;
+      cursor: default;
+    }
+
+    .svc:hover {
+      background: var(--ink);
+      color: var(--bg);
+    }
+
+    .svc-num {
+      font-family: var(--display);
+      font-size: clamp(1rem, 1.8vw, 1.6rem);
+      font-weight: 700;
+      color: var(--accent);
+      display: block;
+      margin-bottom: .3rem;
+      transition: color .25s;
+    }
+
+    .svc:hover .svc-num {
+      color: var(--bg);
+    }
+
+    /* ── RIGHT PANEL ── */
+    .panel--right .meta {
+      font-size: .55rem;
+      opacity: .5;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .tagline {
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: clamp(1rem, 2.2vw, 1.8rem);
+      line-height: 1.1;
+      text-transform: uppercase;
+      letter-spacing: -.02em;
+      margin-bottom: 1.5rem;
+      max-width: 22ch;
+      overflow-wrap: break-word;
+    }
+
+    .tagline em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    /* ── CTAs ── */
+    .ctas {
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+      text-align: center;
+      text-decoration: none;
+      font-family: var(--mono);
+      font-size: .7rem;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: .7rem 1.2rem;
+      border: 1px solid currentColor;
+      transition: all .2s ease;
+      font-weight: 700;
+    }
+
+    .btn svg {
+      flex-shrink: 0;
+    }
+
+    .btn-primary {
+      background: var(--bg);
+      color: var(--ink);
+      border-color: var(--bg);
+    }
+
+    .btn-primary:hover {
+      background: transparent;
+      color: var(--bg);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: rgba(240, 237, 230, .75);
+      border-color: rgba(240, 237, 230, .3);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(240, 237, 230, .1);
+      color: var(--bg);
+      border-color: var(--bg);
+    }
+
+    .btn-dim {
+      background: transparent;
+      color: rgba(240, 237, 230, .5);
+      border-color: rgba(240, 237, 230, .15);
+      font-size: .6rem;
+      padding: .5rem 1rem;
+    }
+
+    .btn-dim:hover {
+      color: var(--bg);
+      border-color: rgba(240, 237, 230, .4);
+    }
+
+    /* ── BOTTOM LEFT — EXPERTISE ── */
+    .expertise-header {
+      font-family: var(--display);
+      font-size: clamp(.55rem, .9vw, .7rem);
+      font-weight: 300;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: .8rem;
+    }
+
+    .tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+      margin-bottom: 1rem;
+    }
+
+    .tool-tag {
+      font-size: .55rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      border: 1px solid rgba(13, 13, 13, .25);
+      padding: .25em .6em;
+      transition: all .2s;
+      cursor: default;
+    }
+
+    .tool-tag:hover {
+      background: var(--ink);
+      color: var(--bg);
+      border-color: var(--ink);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: .8rem;
+      border-top: 1px solid rgba(13, 13, 13, .15);
+      padding-top: .8rem;
+    }
+
+    .stat-val {
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: clamp(1.2rem, 2.2vw, 1.8rem);
+      letter-spacing: -.03em;
+      color: var(--accent);
+    }
+
+    .stat-lbl {
+      font-size: .5rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      line-height: 1.4;
+      margin-top: .2rem;
+    }
+
+    /* ── BOTTOM RIGHT — GEO/LANG ── */
+    .panel--bottom-right {
+      pointer-events: auto;
+    }
+
+    .lang-toggle {
+      display: flex;
+      gap: .4rem;
+      margin-bottom: auto;
+    }
+
+    .lang-btn {
+      background: none;
+      border: 1px solid rgba(240, 237, 230, .5);
+      color: rgba(240, 237, 230, .7);
+      font-family: var(--mono);
+      font-size: .6rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: .5em .9em;
+      min-height: 44px;
+      min-width: 44px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .lang-btn.active,
+    .lang-btn:hover {
+      background: rgba(240, 237, 230, .15);
+      color: var(--bg);
+      border-color: var(--bg);
+    }
+
+    .bottom-right-inner {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+    }
+
+    .geo {
+      font-size: .55rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-top: auto;
+      line-height: 1.6;
+    }
+
+    /* ── SYSTEM STATUS ── */
+    .sys-status {
+      font-size: .5rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #3ecf3e;
+      margin-right: .35rem;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: .3;
+      }
+    }
+
+    /* ── FOCUS ── */
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    /* ── SVC DETAIL ── */
+    .svc-detail {
+      opacity: .6;
+      font-size: .65em;
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width: 1024px) {
+      .site {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        margin: 0;
+        border: none;
+      }
+
+      .divider-v,
+      .divider-h {
+        display: none;
+      }
+
+      .panel--left,
+      .panel--right,
+      .panel--bottom-left,
+      .panel--bottom-right {
+        grid-column: 1;
+        border-bottom: 1px solid var(--ink);
+      }
+
+      .panel--left {
+        grid-row: auto;
+      }
+
+      .panel--right {
+        grid-row: auto;
+      }
+
+      .panel--bottom-left {
+        grid-row: auto;
+      }
+
+      .panel--bottom-right {
+        grid-row: auto;
+      }
+
+      .services {
+        grid-template-columns: 1fr 1fr;
+        margin: 0;
+      }
+
+      h1 {
+        font-size: 11vw;
+      }
+    }
+
+    /* ── DARK MODE ── */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #121212;
+        --ink: #E8E4DC;
+        --accent: #E05A34;
+        --muted: rgba(232, 228, 220, 0.55);
+      }
+
+      .panel--left,
+      .panel--bottom-left {
+        background: #1A1A1A;
+      }
+
+      .panel--right {
+        background: #1E1E1E;
+        color: var(--ink);
+      }
+
+      .btn-primary {
+        background: var(--ink);
+        color: var(--bg);
+        border-color: var(--ink);
+      }
+
+      .btn-primary:hover {
+        background: transparent;
+        color: var(--ink);
+      }
+
+      .btn-ghost {
+        color: rgba(232, 228, 220, .75);
+        border-color: rgba(232, 228, 220, .25);
+      }
+
+      .btn-ghost:hover {
+        background: rgba(232, 228, 220, .1);
+        color: var(--ink);
+        border-color: var(--ink);
+      }
+
+      .btn-dim {
+        color: rgba(232, 228, 220, .5);
+        border-color: rgba(232, 228, 220, .12);
+      }
+
+      .btn-dim:hover {
+        color: var(--ink);
+        border-color: rgba(232, 228, 220, .3);
+      }
+
+      .tool-tag {
+        border-color: rgba(232, 228, 220, .2);
+      }
+
+      .tool-tag:hover {
+        background: var(--ink);
+        color: var(--bg);
+        border-color: var(--ink);
+      }
+
+      .svc {
+        border-color: rgba(232, 228, 220, .2);
+      }
+
+      .svc:hover {
+        background: var(--ink);
+        color: var(--bg);
+      }
+
+      .services {
+        border-color: rgba(232, 228, 220, .2);
+      }
+
+      .stats {
+        border-color: rgba(232, 228, 220, .12);
+      }
+
+      .badge {
+        border-color: var(--ink);
+      }
+
+      .lang-btn {
+        border-color: rgba(232, 228, 220, .4);
+        color: rgba(232, 228, 220, .6);
+      }
+
+      .lang-btn.active,
+      .lang-btn:hover {
+        background: rgba(232, 228, 220, .12);
+        color: var(--ink);
+        border-color: var(--ink);
+      }
+
+      .panel--bottom-right {
+        background: #9E3010;
+      }
+
+      .site {
+        border-color: rgba(232, 228, 220, .15);
+      }
+
+      .divider-v,
+      .divider-h {
+        background: rgba(232, 228, 220, .15);
+      }
+    }
+
+    /* ── REDUCED MOTION ── */
+    @media (prefers-reduced-motion: reduce) {
+      #canvas {
+        display: none;
+      }
+
+      .dot {
+        animation: none;
+        opacity: 1;
+      }
+
+      *,
+      *::before,
+      *::after {
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <canvas id="canvas"></canvas>
+
+  <main class="site">
+
+    <!-- LEFT HERO PANEL -->
+    <section class="panel panel--left" aria-label="Заголовок">
+      <div>
+        <div class="sys-status">
+          <span class="dot"></span>SYSTEM ONLINE · MULTIPHASE MODEL ACTIVE
+        </div>
+
+        <div class="badge">Нефтегаз · Flow Assurance · Production Engineering</div>
+
+        <header>
+          <h1>Евгений<br>Демин</h1>
+          <p class="hero-sub">
+            Многофазное течение в трубах и скважинах<br>
+            Flow Assurance &amp; Технологии добычи нефти и газа<br>
+            Корпоративное обучение и инженерные расчеты<br>
+            Россия и международные проекты
+          </p>
+        </header>
+      </div>
+
+      <!-- SERVICES -->
+      <div class="services" role="list" aria-label="Направления">
+        <div class="svc" role="listitem">
+          <span class="svc-num">01</span>
+          Корпоративное<br>обучение<br><small class="svc-detail">Курсы · Воркшопы · Лекции</small>
+        </div>
+        <div class="svc" role="listitem">
+          <span class="svc-num">02</span>
+          Инжиниринг<br>&amp; расчеты<br><small class="svc-detail">OLGA · PIPESIM · Prosper</small>
+        </div>
+        <div class="svc" role="listitem">
+          <span class="svc-num">03</span>
+          Экспертная<br>оценка<br><small class="svc-detail">Flow Assurance · Риски</small>
+        </div>
+        <div class="svc" role="listitem">
+          <span class="svc-num">04</span>
+          Менторинг<br>&amp; развитие<br><small class="svc-detail">Инженеры · Специалисты</small>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIVIDER VERTICAL -->
+    <div class="divider-v" aria-hidden="true"></div>
+
+    <!-- RIGHT PANEL -->
+    <section class="panel panel--right" aria-label="О специалисте и контакт">
+      <div class="meta">DEMIN.TECH · 2026</div>
+
+      <p class="tagline">
+        Флюид от забоя<br>до подготовки —<br><em>без остановок.</em>
+      </p>
+
+      <nav class="ctas" aria-label="Контакты">
+        <a href="mailto:eugene@demin.tech" class="btn btn-primary" data-cta="mail">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="2" y="4" width="20" height="16" rx="2" />
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+          </svg>
+          eugene@demin.tech
+        </a>
+        <a href="https://t.me/eugenedemin" class="btn btn-ghost" target="_blank" rel="noopener" data-cta="tg">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path
+              d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-2.04 9.602c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.903.619z" />
+          </svg>
+          Telegram
+        </a>
+        <a href="https://www.linkedin.com/in/eugene-demin" class="btn btn-ghost" target="_blank" rel="noopener"
+          data-cta="li">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path
+              d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+          </svg>
+          LinkedIn
+        </a>
+        <a href="https://hh.ru/resume/ff8cbc03ff055768220039ed1f48433268386e" class="btn btn-dim" target="_blank"
+          rel="noopener" data-cta="hh">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path
+              d="M0 8.44v7.12h3.56V8.44H0zm6.68 0v7.12h3.56V12.7h3.56v2.86h3.56V8.44h-3.56v2.86h-3.56V8.44H6.68zM20.44 8.44v7.12H24V8.44h-3.56z" />
+          </svg>
+          hh.ru
+        </a>
+        <a href="https://scholar.google.ru/citations?user=xjSvYXEAAAAJ&hl=en" class="btn btn-dim" target="_blank"
+          rel="noopener" data-cta="scholar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z"/>
+          </svg>
+          Google Scholar
+        </a>
+      </nav>
+    </section>
+
+    <!-- DIVIDER HORIZONTAL -->
+    <div class="divider-h" aria-hidden="true"></div>
+
+    <!-- BOTTOM LEFT — EXPERTISE -->
+    <section class="panel panel--bottom-left" aria-label="Инструменты и достижения">
+      <p class="expertise-header">Инструменты &amp; Экспертиза</p>
+
+      <div class="tools" role="list" aria-label="Программные комплексы">
+        <span class="tool-tag" role="listitem">OLGA</span>
+        <span class="tool-tag" role="listitem">PIPESIM</span>
+        <span class="tool-tag" role="listitem">Prosper / GAP</span>
+        <span class="tool-tag" role="listitem">PVTsim</span>
+        <span class="tool-tag" role="listitem">tNavigator</span>
+        <span class="tool-tag" role="listitem">Unifloc</span>
+        <span class="tool-tag" role="listitem">Hydrate · Wax · Scale</span>
+        <span class="tool-tag" role="listitem">Nodal Analysis</span>
+        <span class="tool-tag" role="listitem">CO₂ Injection</span>
+        <span class="tool-tag" role="listitem">ESP · GL · PCP</span>
+        <span class="tool-tag" role="listitem">Flow Assurance</span>
+      </div>
+
+      <dl class="stats">
+        <div>
+          <dt class="stat-val">30+</dt>
+          <dd class="stat-lbl">Проектов<br>в год</dd>
+        </div>
+        <div>
+          <dt class="stat-val">2</dt>
+          <dd class="stat-lbl">Патента<br>на изобретение</dd>
+        </div>
+        <div>
+          <dt class="stat-val">5+</dt>
+          <dd class="stat-lbl">Лет авторских<br>курсов</dd>
+        </div>
+      </dl>
+    </section>
+
+    <!-- BOTTOM RIGHT — GEO & LANG -->
+    <section class="panel panel--bottom-right" aria-label="Информация">
+      <div class="bottom-right-inner">
+        <div class="lang-toggle" aria-label="Переключение языка">
+          <button class="lang-btn active" onclick="setLang('ru')" aria-pressed="true">RU</button>
+          <button class="lang-btn" onclick="setLang('en')" aria-pressed="false">EN</button>
+        </div>
+
+        <p class="geo">Россия<br>Зарубежные проекты</p>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    /* ── CANVAS: multiphase typography particle system ── */
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let W, H, particles = [];
+    const mouse = { x: -999, y: -999, r: 140 };
+
+    const PHASES = {
+      GAS: { chars: ['CH₄', 'P', 'T', '↑', '⬆', 'V', 'GAS'], color: 'rgba(30,30,30,0.5)', vy: -1.8, vx: .3, size: 18, visc: .985 },
+      OIL: { chars: ['OIL', 'µ', 'FLOW', 'LIQUID', 'ρ'], color: 'rgba(0,0,0,0.8)', vy: -.4, vx: .2, size: 36, visc: .96 },
+      WATER: { chars: ['H₂O', '~~', '∿', 'WATER', 'Bw'], color: 'rgba(80,80,80,0.55)', vy: .6, vx: .3, size: 22, visc: .93 },
+      SAND: { chars: ['·', '·', ',', 'WAX', 'SCALE', 'SAND'], color: 'rgba(10,10,10,0.75)', vy: 1.6, vx: .1, size: 11, visc: .82 },
+    };
+
+    class Particle {
+      constructor(randomY) {
+        this.init(randomY);
+      }
+      init(randomY) {
+        const keys = Object.keys(PHASES);
+        const w = [.28, .3, .22, .2];
+        let r = Math.random(), cum = 0;
+        for (let i = 0; i < keys.length; i++) {
+          cum += w[i];
+          if (r < cum) { this.phase = keys[i]; break; }
+        }
+        const p = PHASES[this.phase];
+        this.text = p.chars[Math.floor(Math.random() * p.chars.length)];
+        this.x = Math.random() * W;
+        if (randomY) this.y = Math.random() * H;
+        else this.y = p.vy < 0 ? H + 30 : -30;
+        this.vx = (Math.random() - .5) * p.vx * 2;
+        this.vy = p.vy * (.8 + Math.random() * .4);
+        this.size = p.size * (.75 + Math.random() * .5);
+        this.color = p.color;
+        this.visc = p.visc;
+        this.baseVy = this.vy;
+        this.alpha = .6 + Math.random() * .4;
+      }
+      update() {
+        const dx = mouse.x - this.x, dy = mouse.y - this.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < mouse.r && dist > 0) {
+          const force = (mouse.r - dist) / mouse.r * 4;
+          this.vx -= (dx / dist) * force;
+          this.vy -= (dy / dist) * force;
+        }
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vx *= this.visc;
+        if (Math.abs(this.vy) < Math.abs(this.baseVy)) this.vy += this.baseVy * .05;
+        const p = PHASES[this.phase];
+        if (p.vy < 0 && this.y < -40) this.init(false);
+        if (p.vy > 0 && this.y > H + 40) this.init(false);
+        if (this.x > W + 40 || this.x < -40) { this.x = Math.random() * W; }
+      }
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.fillStyle = this.color;
+        ctx.font = `${this.phase === 'OIL' ? 'bold ' : ''}${Math.floor(this.size)}px 'Space Mono', monospace`;
+        ctx.fillText(this.text, this.x, this.y);
+        ctx.restore();
+      }
+    }
+
+    function resize() {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+    function init() {
+      resize();
+      particles = [];
+      const n = Math.min(Math.floor(W * .18), 140);
+      for (let i = 0; i < n; i++) particles.push(new Particle(true));
+    }
+    function loop() {
+      ctx.clearRect(0, 0, W, H);
+      particles.forEach(p => { p.update(); p.draw(); });
+      requestAnimationFrame(loop);
+    }
+    window.addEventListener('resize', () => { resize(); });
+    window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+    window.addEventListener('touchmove', e => { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; }, { passive: true });
+    init(); loop();
+
+    /* ── LANG TOGGLE ── */
+    const ICONS = {
+      mail: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>',
+      tg: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-2.04 9.602c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.903.619z"/></svg>',
+      li: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>',
+      hh: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M0 8.44v7.12h3.56V8.44H0zm6.68 0v7.12h3.56V12.7h3.56v2.86h3.56V8.44h-3.56v2.86h-3.56V8.44H6.68zM20.44 8.44v7.12H24V8.44h-3.56z"/></svg>',
+      scholar: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z"/></svg>'
+    };
+
+    const CONTENT = {
+      ru: {
+        h1: 'Евгений<br>Демин',
+        sub: 'Многофазное течение в трубах и скважинах<br>Flow Assurance &amp; Технологии добычи нефти и газа<br>Корпоративное обучение и инженерные расчеты<br>Россия и международные проекты',
+        tagline: 'Флюид от забоя<br>до подготовки —<br><em>без остановок.</em>',
+        svc1: ['01', 'Корпоративное<br>обучение', 'Курсы · Воркшопы · Лекции'],
+        svc2: ['02', 'Инжиниринг<br>&amp; расчеты', 'OLGA · PIPESIM · Prosper'],
+        svc3: ['03', 'Экспертная<br>оценка', 'Flow Assurance · Риски'],
+        svc4: ['04', 'Менторинг<br>&amp; развитие', 'Инженеры · Специалисты'],
+        cta_mail: 'eugene@demin.tech',
+        cta_tg: 'Telegram',
+        cta_li: 'LinkedIn',
+        cta_hh: 'hh.ru',
+        cta_scholar: 'Google Scholar',
+        geo: 'Россия<br>Зарубежные проекты',
+      },
+      en: {
+        h1: 'Eugene<br>Demin',
+        sub: 'Multiphase Flow in Pipelines and Wellbores<br>Flow Assurance &amp; Production Technology<br>Corporate Training and Engineering Studies<br>Russia &amp; International Projects',
+        tagline: 'Fluid from reservoir<br>to export —<br><em>uninterrupted.</em>',
+        svc1: ['01', 'Corporate<br>Training', 'Courses · Workshops · Lectures'],
+        svc2: ['02', 'Engineering<br>&amp; Modeling', 'OLGA · PIPESIM · Prosper'],
+        svc3: ['03', 'Expert<br>Assessment', 'Flow Assurance · Risk review'],
+        svc4: ['04', 'Mentoring<br>&amp; Coaching', 'Engineers · Specialists'],
+        cta_mail: 'eugene@demin.tech',
+        cta_tg: 'Telegram',
+        cta_li: 'LinkedIn',
+        cta_hh: 'hh.ru',
+        cta_scholar: 'Google Scholar',
+        geo: 'Russia<br>International Projects',
+      }
+    };
+
+    function setLang(lang) {
+      const d = CONTENT[lang];
+      document.querySelector('h1').innerHTML = d.h1;
+      document.querySelector('.hero-sub').innerHTML = d.sub;
+      document.querySelector('.tagline').innerHTML = d.tagline;
+      const svcs = document.querySelectorAll('.svc');
+      [d.svc1, d.svc2, d.svc3, d.svc4].forEach((s, i) => {
+        svcs[i].innerHTML = `<span class="svc-num">${s[0]}</span>${s[1]}<br><small class="svc-detail">${s[2]}</small>`;
+      });
+      const btns = document.querySelectorAll('[data-cta]');
+      btns.forEach(btn => {
+        const key = btn.dataset.cta;
+        const label = d['cta_' + key];
+        btn.innerHTML = ICONS[key] + ' ' + label;
+      });
+      document.querySelector('.geo').innerHTML = d.geo;
+      document.querySelectorAll('.lang-btn').forEach(b => { b.classList.toggle('active', b.textContent.toLowerCase() === lang); });
+      document.documentElement.lang = lang;
+    }
+  </script>
+</body>
+
+</html>
